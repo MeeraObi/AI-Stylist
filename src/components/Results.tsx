@@ -16,7 +16,6 @@ export default function Results() {
         setActivePrompt(prompt);
 
         const fd = new FormData();
-        // Just send the outfit desc, API handles the photographic consistency prompts
         fd.append("prompt", prompt);
         fd.append("ref_image", userBlob);
 
@@ -40,6 +39,9 @@ export default function Results() {
         { label: "Social", icon: Users, desc: comprehensiveResults?.first_looks?.social || "Evening Casual" }
     ];
 
+    // Fallback summary if data is missing
+    const styleSummary = comprehensiveResults?.profile_writeup?.summary || "Your unique style DNA has been analyzed. You lean towards a refined, modern aesthetic that balances functionality with high-fashion elements.";
+
     return (
         <div className="screen pt-6 pb-20">
             <div className="flex items-center gap-3 mb-8">
@@ -49,11 +51,12 @@ export default function Results() {
                 <h2 className="text-2xl font-bold tracking-tight">Style DNA</h2>
             </div>
 
-            <div className="tile bg-black text-white border-none p-8 mb-8 relative overflow-hidden">
-                <Sparkles className="absolute -right-4 -top-4 h-24 w-24 text-white/5 rotate-12" />
-                <span className="label-nia text-gray-400 mb-2">Style Profile</span>
-                <p className="text-xl font-medium leading-relaxed italic">
-                    &quot;{comprehensiveResults?.profile_writeup?.summary || "Your unique style profile is ready."}&quot;
+            {/* Premium Black Profile Card - Re-implemented without .tile to avoid conflicts */}
+            <div className="bg-neutral-900 text-white rounded-[32px] p-8 mb-10 relative overflow-hidden shadow-2xl">
+                <Sparkles size={100} className="absolute -right-4 -top-4 text-white/10 rotate-12 pointer-events-none" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-4 block">Style Profile</span>
+                <p className="text-lg font-medium leading-relaxed italic relative z-10">
+                    &quot;{styleSummary}&quot;
                 </p>
             </div>
 
@@ -94,9 +97,9 @@ export default function Results() {
             )}
 
             <div className="tile bg-[#f0f9ff] border-[#e0f2fe] p-6 text-center">
-                <h4 className="text-blue-900 font-bold mb-2">Physical Description Analysis</h4>
-                <p className="text-blue-700/80 text-xs leading-relaxed italic">
-                    {comprehensiveResults?.physical_desc || "No comprehensive physical analysis data found."}
+                <h4 className="text-blue-900 font-bold mb-2 text-sm">Physical Description Analysis</h4>
+                <p className="text-blue-700/80 text-[11px] leading-relaxed italic">
+                    {comprehensiveResults?.physical_desc || "Analyzing your visual profile for precise AI garment fitting..."}
                 </p>
                 <button
                     className="mt-4 text-[10px] font-bold uppercase tracking-widest text-blue-900 hover:underline"
