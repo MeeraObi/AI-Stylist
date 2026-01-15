@@ -58,10 +58,10 @@ export default function InitialCheck() {
                 </div>
             ))}
 
-            <div className="tile bg-black text-white border-none mt-8 p-6">
+            <div className="tile mt-8 p-6 border-2 border-gray-100">
                 <h3 className="text-lg font-bold mb-2">Subscribe to Nia</h3>
-                <p className="text-gray-400 text-sm mb-6">Unlock detailed DNA analysis and AI-powered wardrobe planning.</p>
-                <button className="btn-nia bg-white text-black py-3" onClick={handleStartQuiz}>
+                <p className="text-gray-500 text-sm mb-6">Unlock detailed DNA analysis and AI-powered wardrobe planning.</p>
+                <button className="btn-nia py-3" onClick={handleStartQuiz}>
                     Complete DNA Scan
                 </button>
             </div>
