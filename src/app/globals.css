@@ -4,18 +4,18 @@
 @theme {
   --color-background: #fff;
   --color-foreground: #000;
-  --color-muted: #f0f2f5;
-  --color-accent: #000;
+  --color-muted: #f5f5f5;
+  --color-accent: #666;
   --color-accent-foreground: #fff;
 
-  --radius-lg: 40px;
-  --radius-md: 20px;
-  --radius-sm: 12px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
 }
 
 @layer base {
   body {
-    @apply bg-[#f0f2f5] text-black font-sans overflow-hidden antialiased;
+    @apply bg-white text-black font-sans overflow-hidden antialiased;
   }
 }
 
@@ -25,7 +25,7 @@
 
 @media (min-width: 450px) {
   .app-container {
-    @apply max-w-[390px] max-h-[844px] rounded-[40px] border-[8px] border-[#111] mx-auto;
+    @apply max-w-[390px] max-h-[844px] rounded-[16px] border border-gray-200 mx-auto;
   }
 }
 
@@ -52,11 +52,11 @@
 }
 
 .btn-nia {
-  @apply bg-black text-white p-4 rounded-2xl w-full text-base font-semibold transition active:scale-[0.98] disabled:opacity-50;
+  @apply bg-gray-100 text-black border border-gray-200 p-4 rounded-xl w-full text-base font-semibold transition active:scale-[0.98] disabled:opacity-50;
 }
 
 .btn-nia-outline {
-  @apply bg-transparent border border-[#e0e0e0] text-black p-4 rounded-2xl w-full text-base font-semibold transition active:scale-[0.98];
+  @apply bg-transparent border border-gray-200 text-black p-4 rounded-xl w-full text-base font-semibold transition active:scale-[0.98];
 }
 
 .tile {

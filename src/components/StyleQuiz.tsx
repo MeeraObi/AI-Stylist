@@ -102,13 +102,13 @@ export default function StyleQuiz() {
     }
 
     return (
-        <div className="screen pt-6 flex flex-col h-full bg-[#fafafa]">
+        <div className="screen pt-6 flex flex-col h-full bg-white">
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h2 className="text-2xl font-bold">Style Quiz</h2>
                     <p className="text-gray-400 text-xs">Swipe to refine your DNA</p>
                 </div>
-                <div className="bg-black text-white px-3 py-1 rounded-full text-[10px] font-bold">
+                <div className="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-[10px] font-bold">
                     {currentIndex + 1} / {cards.length}
                 </div>
             </div>
@@ -148,9 +148,9 @@ export default function StyleQuiz() {
                 </button>
                 <button
                     onClick={() => handleAction(true)}
-                    className="h-16 w-16 rounded-full bg-black shadow-lg flex items-center justify-center text-white active:scale-90 transition-transform"
+                    className="h-16 w-16 rounded-full bg-gray-100 border border-gray-200 shadow-lg flex items-center justify-center text-gray-400 active:scale-90 transition-transform"
                 >
-                    <Heart size={32} fill="white" />
+                    <Heart size={32} />
                 </button>
             </div>
         </div>

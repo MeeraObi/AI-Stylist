@@ -42,15 +42,15 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            <div className="tile bg-[#f0f8ff] border-[#d0e8ff] p-4 mb-6">
+            <div className="tile p-4 mb-6">
                 <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-2">
-                        <Cloud size={16} className="text-blue-500" />
+                        <Cloud size={16} className="text-gray-400" />
                         <strong className="text-sm">Heads Up</strong>
                     </div>
-                    <span className="text-[10px] text-blue-400 font-bold uppercase tracking-wider">Today</span>
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Today</span>
                 </div>
-                <p className="text-xs text-blue-700 leading-relaxed font-medium">Rain expected later. Swap suede for leather boots to protect your footwear.</p>
+                <p className="text-xs text-gray-600 leading-relaxed font-medium">Rain expected later. Swap suede for leather boots to protect your footwear.</p>
             </div>
 
             <div className="hero-container mb-8">

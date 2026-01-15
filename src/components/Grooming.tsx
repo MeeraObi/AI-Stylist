@@ -45,10 +45,10 @@ export default function Grooming() {
                 <h2 className="text-2xl font-bold">Grooming</h2>
             </div>
 
-            <div className="tile bg-black text-white p-8 mb-8 border-none overflow-hidden relative">
-                <Sparkles className="absolute -right-4 -top-4 h-24 w-24 text-white/5 rotate-12" />
-                <span className="label-nia text-gray-400 mb-4">Personalized Advice</span>
-                <p className="text-lg font-medium leading-relaxed italic truncate-5-lines">
+            <div className="tile p-8 mb-8 overflow-hidden relative">
+                <Sparkles className="absolute -right-4 -top-4 h-24 w-24 text-gray-50 rotate-12" />
+                <span className="label-nia mb-4 text-gray-400 block">Personalized Advice</span>
+                <p className="text-lg font-medium leading-relaxed italic text-gray-700 relative z-10">
                     &quot;{data?.tip || "Loading your personalized grooming strategy..."}&quot;
                 </p>
             </div>
