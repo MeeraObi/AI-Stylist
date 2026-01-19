@@ -11,29 +11,12 @@ export default function InitialCheck() {
     const [openAccordion, setOpenAccordion] = useState<string | null>(null);
 
     const handleStartQuiz = async () => {
-        setLoading(true, "Building Style DNA...");
-        const fd = new FormData();
-        if (userBlob) fd.append("files", userBlob);
-
-        try {
-            const res = await fetch("/api/analyze-comprehensive", {
-                method: "POST",
-                body: fd,
-            });
-            const data = await res.json();
-            setComprehensiveResults(data);
-            setScreen("quiz");
-        } catch (error) {
-            console.error(error);
-            alert("Error building DNA.");
-        } finally {
-            setLoading(false);
-        }
+        setScreen("signup");
     };
 
     const results = preliminaryResults || {
-        works: "Top needs a change. Jumper looks great. Boots perfect match.",
-        tweaks: "Trousers are too loose. Color mismatch on scarf.",
+        works: "Replace Top. Great Jumper. Perfect Boots.",
+        tweaks: "Loose Trousers. Scarf Mismatch.",
         accessories: "Add a silver watch. Use a leather belt.",
         grooming: "Trim beard for sharper look. Use matte hair product.",
         posture: "Stand straighter to show confidence. Shoulders back."
@@ -141,22 +124,22 @@ export default function InitialCheck() {
                 {feedbackItems.map((item) => (
                     <div
                         key={item.id}
-                        className={`absolute flex items-center gap-2 px-3 py-2 rounded-lg shadow-md text-xs font-semibold whitespace-nowrap z-10 animate-in fade-in zoom-in duration-300`}
+                        className={`absolute flex items-start gap-1.5 px-2.5 py-1.5 rounded-[8px] shadow-sm text-[11px] font-bold z-10 animate-in fade-in zoom-in duration-300 max-w-[140px]`}
                         style={{
                             top: item.style.split(';')[0].split(':')[1],
-                            left: item.style.includes('left') ? item.style.split(';')[1]?.split(':')[1] : 'auto',
-                            right: item.style.includes('right') ? item.style.split(';')[1]?.split(':')[1] : 'auto',
+                            left: item.style.includes('left') ? '8px' : 'auto',
+                            right: item.style.includes('right') ? '8px' : 'auto',
                             backgroundColor: 'rgba(255, 255, 255, 0.95)'
                         }}
                     >
-                        <span>{item.text}</span>
+                        <span className="leading-tight text-left">{item.text}</span>
                         {item.type === "works" ? (
-                            <div className="bg-green-100 rounded-full p-0.5">
-                                <Check size={12} className="text-green-600" strokeWidth={3} />
+                            <div className="bg-green-100 rounded-full p-[2px] shrink-0 mt-0.5">
+                                <Check size={10} className="text-green-600" strokeWidth={3} />
                             </div>
                         ) : (
-                            <div className="bg-red-100 rounded-full p-0.5">
-                                <X size={12} className="text-red-500" strokeWidth={3} />
+                            <div className="bg-red-100 rounded-full p-[2px] shrink-0 mt-0.5">
+                                <X size={10} className="text-red-500" strokeWidth={3} />
                             </div>
                         )}
                     </div>

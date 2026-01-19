@@ -4,6 +4,8 @@ import Shell from "@/components/Shell";
 import SplashScreen from "@/components/Splash";
 import OnboardingScreen from "@/components/Onboarding";
 import StylistUpload from "@/components/StylistUpload";
+import SignUp from "@/components/SignUp";
+import SignIn from "@/components/SignIn";
 import InitialCheck from "@/components/InitialCheck";
 import Dashboard from "@/components/Dashboard";
 import Wardrobe from "@/components/Wardrobe";
@@ -28,6 +30,10 @@ export default function Home() {
         return <StylistUpload />;
       case "initial-check":
         return <InitialCheck />;
+      case "signup":
+        return <SignUp />;
+      case "signin":
+        return <SignIn />;
       case "dashboard":
         return <Dashboard />;
       case "wardrobe":

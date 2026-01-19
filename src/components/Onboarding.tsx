@@ -69,10 +69,13 @@ export default function OnboardingScreen() {
                 />
             </div>
 
-            <div className="absolute bottom-6 left-6 right-6">
-                <button className="bg-black text-white border border-black h-12 rounded-xl w-full text-base font-semibold transition active:scale-[0.98] flex items-center justify-center" onClick={handleProceed}>
+            <div className="absolute bottom-6 left-6 right-6 flex flex-col items-center">
+                <button className="bg-black text-white border border-black h-12 rounded-xl w-full text-base font-semibold transition active:scale-[0.98] flex items-center justify-center mb-4" onClick={handleProceed}>
                     Proceed to Stylist&apos;s Eye
                 </button>
+                <p className="text-xs text-gray-400">
+                    Already a member? <button onClick={() => setScreen("signin")} className="font-bold text-black border-b border-black pb-0.5">Log in</button>
+                </p>
             </div>
         </div>
     );
