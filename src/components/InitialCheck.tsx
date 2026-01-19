@@ -1,10 +1,14 @@
 "use client";
 
 import { useStylistStore } from "@/store/use-stylist-store";
-import { CheckCircle2, Wrench, Gem, Scissors, Users } from "lucide-react";
+import { Check, X, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import Image from "next/image";
 
 export default function InitialCheck() {
     const { preliminaryResults, setScreen, setLoading, userBlob, setComprehensiveResults } = useStylistStore();
+    const [viewMode, setViewMode] = useState<"current" | "tweak">("current");
+    const [openAccordion, setOpenAccordion] = useState<string | null>(null);
 
     const handleStartQuiz = async () => {
         setLoading(true, "Building Style DNA...");
@@ -28,42 +32,149 @@ export default function InitialCheck() {
     };
 
     const results = preliminaryResults || {
-        works: "Nia is currently analyzing your full outfit layers. She will provide detailed feedback on how your tops, bottoms, and additional layers interact.",
-        tweaks: "Identifying subtle adjustments to elevate your style. Small changes in fit or color can make a significant impact on your overall silhouette.",
-        accessories: "Selecting the perfect accents to complement your look. The right items can tie an entire outfit together and add a touch of personality.",
-        grooming: "Curating personalized grooming advice for a sharp finish. Attention to detail ensures you always put your best foot forward.",
-        posture: "Observing your stance to maximize visual impact. Good posture naturally enhances the way clothes drape and look on your frame."
+        works: "Top needs a change. Jumper looks great. Boots perfect match.",
+        tweaks: "Trousers are too loose. Color mismatch on scarf.",
+        accessories: "Add a silver watch. Use a leather belt.",
+        grooming: "Trim beard for sharper look. Use matte hair product.",
+        posture: "Stand straighter to show confidence. Shoulders back."
     };
 
-    const items = [
-        { label: "What Works", value: results.works, icon: CheckCircle2, color: "text-green-500", bgColor: "bg-green-50", labelColor: "text-green-700", iconSize: 20 },
-        { label: "Small Tweaks", value: results.tweaks, icon: Wrench, color: "text-orange-500", bgColor: "bg-orange-50", labelColor: "text-orange-700", iconSize: 20 },
-        { label: "Accessories", value: results.accessories, icon: Gem, color: "text-purple-500", bgColor: "bg-purple-50", labelColor: "text-purple-700", iconSize: 20 },
-        { label: "Grooming Tips", value: results.grooming, icon: Scissors, color: "text-blue-500", bgColor: "bg-blue-50", labelColor: "text-blue-700", iconSize: 20 },
-        { label: "Posture", value: results.posture, icon: Users, color: "text-pink-500", bgColor: "bg-pink-50", labelColor: "text-pink-700", iconSize: 20 },
-    ];
+    // Helper to parse sentences and assign rough position
+    const parseFeedback = (text: string, type: "works" | "tweaks") => {
+        const sentences = text.split('.').map(s => s.trim()).filter(s => s.length > 0);
+
+        return sentences.map((sentence, idx) => {
+            const lower = sentence.toLowerCase();
+            let position = "top: 50%;"; // default middle
+
+            if (lower.match(/top|shirt|jacket|face|hair|neck|hat|glasses|makeup|shoulders/)) {
+                position = `top: ${20 + (idx * 10)}%;`;
+            } else if (lower.match(/shoe|boot|sneaker|heel|leg|pant|trouser|skirt|sock|bottom/)) {
+                position = `top: ${70 + (idx * 10)}%;`;
+            } else {
+                position = `top: ${45 + (idx * 15)}%;`;
+            }
+
+            // Pseudo-random horizontal placement for visual variety
+            const isLeft = idx % 2 === 0;
+            const horizontal = isLeft ? "left: 5%;" : "right: 5%;";
+
+            return {
+                id: idx,
+                text: sentence,
+                type,
+                style: position + horizontal
+            };
+        });
+    };
+
+    const feedbackItems = useMemo(() => {
+        if (viewMode === "current") {
+            return parseFeedback(results.works, "works");
+        } else {
+            return parseFeedback(results.tweaks, "tweaks");
+        }
+    }, [viewMode, results]);
+
+
+    const AccordionItem = ({ title, content, id }: { title: string, content: string, id: string }) => (
+        <div className="border border-gray-100 rounded-xl mb-3 overflow-hidden bg-white">
+            <button
+                onClick={() => setOpenAccordion(openAccordion === id ? null : id)}
+                className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors"
+            >
+                <span className="font-bold text-sm uppercase tracking-wider text-gray-500">{title}</span>
+                {openAccordion === id ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+            </button>
+            {openAccordion === id && (
+                <div className="p-4 pt-0 text-sm text-gray-600 leading-relaxed bg-white">
+                    {content}
+                </div>
+            )}
+        </div>
+    );
+
+    const imageUrl = userBlob ? URL.createObjectURL(userBlob) : null;
 
     return (
-        <div className="screen pt-6">
-            <h2 className="text-3xl font-extrabold mb-2 tracking-tight">Initial Check</h2>
-            <p className="text-gray-500 mb-10 text-sm">Nia&apos;s first impressions based on your scan.</p>
+        <div className="screen pt-6 pb-32">
+            <h2 className="text-3xl font-extrabold mb-1 tracking-tight">Initial Check</h2>
+            <p className="text-gray-500 mb-6 text-sm">Nia&apos;s first impression based on your scan</p>
 
-            {items.map((item, idx) => (
-                <div key={idx} className="tile group hover:shadow-lg transition-all mb-6 border-l-4" style={{ borderLeftColor: item.color.replace('text-', '') }}>
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className={`p-2.5 rounded-xl ${item.bgColor}`}>
-                            <item.icon className={`${item.color}`} size={item.iconSize} strokeWidth={2.5} />
-                        </div>
-                        <span className={`font-bold text-base uppercase tracking-wide ${item.labelColor}`}>{item.label}</span>
+            {/* Toggle */}
+            <div className="flex items-center gap-6 mb-6">
+                <button
+                    onClick={() => setViewMode("current")}
+                    className="flex items-center gap-2 group"
+                >
+                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${viewMode === "current" ? "border-black" : "border-gray-300"}`}>
+                        {viewMode === "current" && <div className="w-2.5 h-2.5 bg-black rounded-full" />}
                     </div>
-                    <p className="text-gray-600 text-sm leading-relaxed pl-1">{item.value}</p>
-                </div>
-            ))}
+                    <span className={`text-sm font-semibold ${viewMode === "current" ? "text-black" : "text-gray-400"}`}>Your Current Style</span>
+                </button>
 
-            <div className="tile mt-8 p-6 border-2 border-gray-100">
+                <button
+                    onClick={() => setViewMode("tweak")}
+                    className="flex items-center gap-2 group"
+                >
+                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${viewMode === "tweak" ? "border-black" : "border-gray-300"}`}>
+                        {viewMode === "tweak" && <div className="w-2.5 h-2.5 bg-black rounded-full" />}
+                    </div>
+                    <span className={`text-sm font-semibold ${viewMode === "tweak" ? "text-black" : "text-gray-400"}`}>Required Tweek</span>
+                </button>
+            </div>
+
+            {/* Image Area */}
+            <div className="relative w-full aspect-[9/16] bg-gray-100 rounded-2xl overflow-hidden mb-6 shadow-sm">
+                {imageUrl ? (
+                    <Image
+                        src={imageUrl}
+                        alt="User Scan"
+                        fill
+                        className="object-cover"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">No Image Uploaded</div>
+                )}
+
+                {/* Overlays */}
+                {feedbackItems.map((item) => (
+                    <div
+                        key={item.id}
+                        className={`absolute flex items-center gap-2 px-3 py-2 rounded-lg shadow-md text-xs font-semibold whitespace-nowrap z-10 animate-in fade-in zoom-in duration-300`}
+                        style={{
+                            top: item.style.split(';')[0].split(':')[1],
+                            left: item.style.includes('left') ? item.style.split(';')[1]?.split(':')[1] : 'auto',
+                            right: item.style.includes('right') ? item.style.split(';')[1]?.split(':')[1] : 'auto',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)'
+                        }}
+                    >
+                        <span>{item.text}</span>
+                        {item.type === "works" ? (
+                            <div className="bg-green-100 rounded-full p-0.5">
+                                <Check size={12} className="text-green-600" strokeWidth={3} />
+                            </div>
+                        ) : (
+                            <div className="bg-red-100 rounded-full p-0.5">
+                                <X size={12} className="text-red-500" strokeWidth={3} />
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            {/* Accordion */}
+            <div className="mb-8">
+                <AccordionItem id="acc" title="ACCESSORIES" content={results.accessories} />
+                <AccordionItem id="groom" title="GROOMING" content={results.grooming} />
+                <AccordionItem id="posture" title="POSTURE" content={results.posture} />
+            </div>
+
+            {/* Subscribe Card */}
+            <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100">
                 <h3 className="text-lg font-bold mb-2">Subscribe to Nia</h3>
-                <p className="text-gray-500 text-sm mb-6">Unlock detailed DNA analysis and AI-powered wardrobe planning.</p>
-                <button className="btn-nia py-3" onClick={handleStartQuiz}>
+                <p className="text-gray-500 text-sm mb-6 leading-relaxed">Unlock detailed DNA analysis and AI-powered wardrobe planning</p>
+                <button className="bg-[#2A2A2A] text-white w-full py-4 rounded-xl font-semibold text-sm hover:bg-black transition-colors" onClick={handleStartQuiz}>
                     Complete DNA Scan
                 </button>
             </div>

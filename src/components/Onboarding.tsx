@@ -17,10 +17,10 @@ export default function OnboardingScreen() {
 
     return (
         <div className="screen pt-12">
-            <h1 className="text-3xl font-extrabold tracking-tight mb-2">Welcome to Nia.</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight mb-2">Welcome to Nia</h1>
             <p className="text-gray-500 mb-10">Let&apos;s get to know you to personalize your style.</p>
 
-            <span className="label-nia">Step 1: Profile Setup</span>
+            <span className="label-nia">STEP 1: Profile Setup</span>
             <Input
                 type="text"
                 placeholder="Full Name"
@@ -52,7 +52,7 @@ export default function OnboardingScreen() {
                 </Select>
             </div>
 
-            <div className="flex gap-4 mb-8">
+            <div className="flex gap-4 mb-6">
                 <Input
                     type="number"
                     placeholder="Height (cm)"
@@ -69,9 +69,11 @@ export default function OnboardingScreen() {
                 />
             </div>
 
-            <button className="btn-nia h-16" onClick={handleProceed}>
-                Proceed to Stylist&apos;s Eye
-            </button>
+            <div className="absolute bottom-6 left-6 right-6">
+                <button className="bg-black text-white border border-black h-12 rounded-xl w-full text-base font-semibold transition active:scale-[0.98] flex items-center justify-center" onClick={handleProceed}>
+                    Proceed to Stylist&apos;s Eye
+                </button>
+            </div>
         </div>
     );
 }

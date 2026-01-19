@@ -52,7 +52,7 @@
 }
 
 .btn-nia {
-  @apply bg-gray-100 text-black border border-gray-200 p-4 rounded-xl w-full text-base font-semibold transition active:scale-[0.98] disabled:opacity-50;
+  @apply bg-black text-white border border-gray-200 p-4 rounded-xl w-full text-base font-semibold transition active:scale-[0.98] disabled:opacity-50;
 }
 
 .btn-nia-outline {

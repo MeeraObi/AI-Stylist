@@ -95,7 +95,7 @@ export default function StylistUpload() {
                         <div className="bg-white p-4 rounded-full shadow-sm mb-4">
                             <Camera className="h-8 w-8 text-gray-400" />
                         </div>
-                        <p className="text-sm font-medium text-gray-600 mb-10 text-center">Front facing, good lighting<br /><span className="text-xs text-gray-400">Avoid hats, glasses, or busy backgrounds</span></p>
+                        <p className="text-sm font-medium text-gray-500 mb-10 text-center">Front facing, good lighting<br /><span className="text-xs text-gray-400">Avoid hats, glasses, or busy backgrounds</span></p>
 
                         <div className="flex flex-col gap-3 w-full px-4">
                             <button className="btn-nia flex items-center justify-center gap-2" onClick={startCamera}>
