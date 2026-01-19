@@ -2,68 +2,31 @@
 
 import { useStylistStore } from "@/store/use-stylist-store";
 import { ArrowLeft, Calendar, Sparkles } from "lucide-react";
-import { useState } from "react";
-import Image from "next/image";
-
-interface WeeklyLook {
-    day: string;
-    title: string;
-    img: string | null;
-}
+import { useEffect } from "react";
 
 export default function Lookbook() {
-    const { setScreen, setLoading, userBlob, comprehensiveResults } = useStylistStore();
-    const [weeklyLooks, setWeeklyLooks] = useState<WeeklyLook[]>([]);
+    const { setScreen, setLoading, comprehensiveResults, weeklyLooks, setWeeklyLooks } = useStylistStore();
 
-    const generateWeek = async () => {
-        if (!userBlob) {
-            alert("Please start from the beginning to upload a photo first.");
-            setScreen("splash");
-            return;
-        }
-
-        setLoading(true, "Generating Weekly Plan...");
-
-        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-        const schedule = [
-            'Corporate Power Suit',
-            'Smart Casual Chinos',
-            'Creative Layering',
-            'Relaxed Travel Linen',
-            'High Fashion Party'
-        ];
-
-        const newLooks: WeeklyLook[] = [];
-
-        for (let i = 0; i < days.length; i++) {
-            const fd = new FormData();
-            // Send simple outfit name, API handles the person consistency and photography steering
-            fd.append("prompt", schedule[i]);
-            if (userBlob) fd.append("ref_image", userBlob);
-
-            try {
-                const res = await fetch("/api/generate-image", {
-                    method: "POST",
-                    body: fd,
-                });
-                const data = await res.json();
-                newLooks.push({
-                    day: days[i],
-                    title: schedule[i],
-                    img: data.image || null
-                });
-            } catch (err) {
-                console.error(`Error generating ${days[i]}:`, err);
-                newLooks.push({
-                    day: days[i],
-                    title: schedule[i],
-                    img: null
-                });
+    const generateWeekPlan = async () => {
+        setLoading(true, "Planning your week...");
+        try {
+            const res = await fetch("/api/generate-weekly-plan", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    context: comprehensiveResults?.physical_desc || "Normal stylish aesthetic"
+                }),
+            });
+            const data = await res.json();
+            if (data.week) {
+                setWeeklyLooks(data.week);
             }
+        } catch (err) {
+            console.error("Error planning week:", err);
+            alert("Failed to generate plan.");
+        } finally {
+            setLoading(false);
         }
-
-        setWeeklyLooks(newLooks);
-        setLoading(false);
     };
 
     return (
@@ -75,9 +38,11 @@ export default function Lookbook() {
                 <h2 className="text-2xl font-bold">Weekly Lookbook</h2>
             </div>
 
-            <button className="btn-nia h-16 flex items-center justify-center gap-3 mb-10" onClick={generateWeek}>
-                <Sparkles size={20} /> Generate Week (Mon-Fri)
-            </button>
+            {weeklyLooks.length === 0 && (
+                <button className="btn-nia h-16 flex items-center justify-center gap-3 mb-10" onClick={generateWeekPlan}>
+                    <Sparkles size={20} /> Generate Week (Mon-Fri)
+                </button>
+            )}
 
             <div className="space-y-6">
                 {weeklyLooks.map((look, idx) => (
@@ -89,17 +54,14 @@ export default function Lookbook() {
                             </div>
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{look.title}</span>
                         </div>
-                        <div className="h-[250px] bg-gray-50 flex items-center justify-center text-gray-300 relative">
-                            {look.img ? (
-                                <Image
-                                    src={`data:image/jpeg;base64,${look.img}`}
-                                    alt={look.title}
-                                    fill
-                                    className="object-cover"
-                                />
-                            ) : (
-                                <Sparkles size={48} opacity={0.2} strokeWidth={1} />
-                            )}
+                        <div className="p-5">
+                            <p className="text-sm text-gray-600 leading-relaxed mb-4">{look.desc}</p>
+                            <button
+                                onClick={() => setScreen("shop")}
+                                className="btn-nia w-full py-3 text-xs flex items-center justify-center gap-2"
+                            >
+                                Shop Items
+                            </button>
                         </div>
                     </div>
                 ))}

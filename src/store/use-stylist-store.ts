@@ -21,6 +21,9 @@ interface StylistStore {
     isLoading: boolean;
     loadingMessage: string;
     quizSelections: string[];
+    selectedDailyLook: { desc: string; img: string | null } | null;
+    weeklyLooks: Array<{ day: string; title: string; desc: string }>;
+    groomingData: { tip: string; products: string[] } | null;
 
     setUserBlob: (blob: File | null) => void;
     setUserInfo: (info: Partial<UserInfo>) => void;
@@ -33,6 +36,9 @@ interface StylistStore {
     setQuizSelections: (selections: string[]) => void;
     setScreen: (screen: string) => void;
     setLoading: (loading: boolean, message?: string) => void;
+    setSelectedDailyLook: (look: { desc: string; img: string | null } | null) => void;
+    setWeeklyLooks: (looks: Array<{ day: string; title: string; desc: string }>) => void;
+    setGroomingData: (data: { tip: string; products: string[] } | null) => void;
 }
 
 export const useStylistStore = create<StylistStore>((set) => ({
@@ -50,6 +56,9 @@ export const useStylistStore = create<StylistStore>((set) => ({
     isLoading: false,
     loadingMessage: 'Processing...',
     quizSelections: [],
+    selectedDailyLook: null,
+    weeklyLooks: [],
+    groomingData: null,
 
     setUserBlob: (userBlob) => set({ userBlob }),
     setUserInfo: (info) => set((state) => ({ userInfo: { ...state.userInfo, ...info } })),
@@ -58,4 +67,7 @@ export const useStylistStore = create<StylistStore>((set) => ({
     setQuizSelections: (quizSelections) => set({ quizSelections }),
     setScreen: (currentScreen) => set({ currentScreen }),
     setLoading: (isLoading, loadingMessage = 'Processing...') => set({ isLoading, loadingMessage }),
+    setSelectedDailyLook: (selectedDailyLook) => set({ selectedDailyLook }),
+    setWeeklyLooks: (weeklyLooks) => set({ weeklyLooks }),
+    setGroomingData: (groomingData) => set({ groomingData }),
 }));

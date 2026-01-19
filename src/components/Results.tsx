@@ -1,20 +1,21 @@
 "use client";
 
 import { useStylistStore } from "@/store/use-stylist-store";
-import { ArrowLeft, Sparkles, Shirt, Plane, Users, Scissors } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
 export default function Results() {
-    const { comprehensiveResults, setScreen, setLoading, userBlob } = useStylistStore();
+    const { comprehensiveResults, setScreen, setLoading, userBlob, setSelectedDailyLook } = useStylistStore();
+    const [activeTab, setActiveTab] = useState<"Work" | "Travel" | "Social">("Work");
     const [visualizedImg, setVisualizedImg] = useState<string | null>(null);
-    const [activePrompt, setActivePrompt] = useState<string | null>(null);
 
-    const handleVisualize = async (prompt: string) => {
+    const handleVisualize = async () => {
         if (!userBlob) return;
-        setLoading(true, "Visualizing...");
-        setActivePrompt(prompt);
+        const prompt = comprehensiveResults?.first_looks?.[activeTab.toLowerCase() as keyof typeof comprehensiveResults.first_looks];
+        if (!prompt) return;
 
+        setLoading(true, "Visualizing...");
         const fd = new FormData();
         fd.append("prompt", prompt);
         fd.append("ref_image", userBlob);
@@ -25,7 +26,14 @@ export default function Results() {
                 body: fd,
             });
             const data = await res.json();
-            if (data.image) setVisualizedImg(data.image);
+            if (data.image) {
+                setVisualizedImg(data.image);
+                // Save this as the daily look
+                setSelectedDailyLook({
+                    desc: prompt,
+                    img: data.image
+                });
+            }
         } catch (err) {
             console.error(err);
         } finally {
@@ -33,82 +41,80 @@ export default function Results() {
         }
     };
 
-    const looks = [
-        { label: "Work", icon: Shirt, desc: comprehensiveResults?.first_looks?.work || "Professional Suiting" },
-        { label: "Travel", icon: Plane, desc: comprehensiveResults?.first_looks?.travel || "Comfortable Airport Style" },
-        { label: "Social", icon: Users, desc: comprehensiveResults?.first_looks?.social || "Evening Casual" }
-    ];
-
-    // Fallback summary if data is missing
-    const styleSummary = comprehensiveResults?.profile_writeup?.summary || "Your unique style DNA has been analyzed. You lean towards a refined, modern aesthetic that balances functionality with high-fashion elements.";
+    const styleSummary = comprehensiveResults?.profile_writeup?.summary ||
+        "Your unique style DNA favors tailored pieces in neutral colors that emphasize a polished image. Your style transcends seasonal trends, relying instead on timeless designs that showcase confidence and poise. You are drawn to quality fabrics and impeccable tailoring, ensuring that your look is always refined. Your style communicates professionalism and approachability, creating a welcoming atmosphere for colleagues and clients alike. Whether you are presenting to executives or attending networking events, your sophisticated style makes for a captivating and respected presence.";
 
     return (
-        <div className="screen pt-6 pb-20">
-            <div className="flex items-center gap-3 mb-8">
-                <button onClick={() => setScreen("dashboard")} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                    <ArrowLeft size={20} />
-                </button>
-                <h2 className="text-2xl font-bold tracking-tight">Style DNA</h2>
+        <div className="screen pt-12 pb-24">
+            <div className="mb-10 text-center">
+                <h1 className="text-3xl font-extrabold tracking-tighter mb-2">Style DNA</h1>
+                <p className="text-gray-400 text-xs">Your personalized style blueprint.</p>
             </div>
 
-            {/* Premium Black Profile Card - Re-implemented without .tile to avoid conflicts */}
-            {/* Neutral Profile Card */}
-            <div className="tile p-8 mb-10 relative overflow-hidden">
-                <Sparkles size={100} className="absolute -right-4 -top-4 text-gray-100 rotate-12 pointer-events-none" />
-                <span className="label-nia mb-4 block">Style Profile</span>
-                <p className="text-lg font-medium leading-relaxed italic relative z-10 text-gray-700">
-                    &quot;{styleSummary}&quot;
+            {/* Style DNA Narrative */}
+            <div className="tile p-8 mb-12 bg-white shadow-sm border border-gray-100 rounded-[32px]">
+                <p className="text-sm leading-[1.8] text-gray-700 font-medium">
+                    {styleSummary}
                 </p>
             </div>
 
-            <h3 className="label-nia text-black mb-4">Occasions & Looks</h3>
-            <div className="space-y-4 mb-10">
-                {looks.map((look, idx) => (
-                    <div key={idx} className="tile p-6 hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="bg-gray-50 p-2 rounded-lg">
-                                <look.icon size={18} className="text-gray-400" />
-                            </div>
-                            <strong className="text-sm uppercase tracking-widest">{look.label}</strong>
-                        </div>
-                        <p className="text-gray-600 text-sm leading-relaxed mb-6">{look.desc}</p>
+            <div className="mb-12">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-6 block text-center">LOOK SUGGESTIONS</span>
+
+                {/* Tabs */}
+                <div className="flex gap-2 justify-center mb-8">
+                    {(["Work", "Travel", "Social"] as const).map((tab) => (
                         <button
-                            className="btn-nia-outline flex items-center justify-center gap-2 py-3 text-sm border-black"
-                            onClick={() => handleVisualize(look.desc)}
+                            key={tab}
+                            onClick={() => {
+                                setActiveTab(tab);
+                                setVisualizedImg(null);
+                            }}
+                            className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all ${activeTab === tab
+                                ? "bg-white text-black shadow-sm border border-gray-100"
+                                : "text-gray-400 hover:text-gray-600"
+                                }`}
                         >
-                            <Scissors size={14} /> Visualize on Me
+                            {tab}
                         </button>
-                    </div>
-                ))}
-            </div>
-
-            {visualizedImg && (
-                <div className="tile p-0 overflow-hidden border-2 border-black mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="p-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-500">
-                        <span>Visualization Result</span>
-                        <button onClick={() => setVisualizedImg(null)} className="opacity-60 hover:opacity-100">Close</button>
-                    </div>
-                    <div className="relative aspect-[3/4] w-full">
-                        <Image src={`data:image/jpeg;base64,${visualizedImg}`} alt="Visualized Look" fill className="object-cover" />
-                    </div>
-                    <div className="p-4 bg-gray-50 italic text-[10px] text-gray-500 leading-relaxed">
-                        {activePrompt}
-                    </div>
+                    ))}
                 </div>
-            )}
 
-            <div className="tile p-6 text-center">
-                <h4 className="text-gray-800 font-bold mb-2 text-sm">Physical Description Analysis</h4>
-                <p className="text-gray-600 text-[11px] leading-relaxed italic">
-                    {comprehensiveResults?.physical_desc || "Analyzing your visual profile for precise AI garment fitting..."}
-                </p>
-                <button
-                    className="mt-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-black hover:underline"
-                    onClick={() => setScreen("grooming")}
-                >
-                    View Grooming Details →
-                </button>
+                {/* Look Card */}
+                <div className="tile p-8 bg-gray-50/50 border-none rounded-[32px] text-center">
+                    <h3 className="text-lg font-bold mb-4">Look</h3>
+
+                    {visualizedImg ? (
+                        <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden mb-6 border border-white shadow-md">
+                            <Image src={`data:image/jpeg;base64,${visualizedImg}`} alt="Visualized Look" fill className="object-cover" />
+                            <button
+                                onClick={() => setVisualizedImg(null)}
+                                className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full backdrop-blur-md"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-gray-500 mb-8 italic">
+                            Select a category above to see your recommended look.
+                        </p>
+                    )}
+
+                    <button
+                        className="btn-nia w-full py-4 rounded-2xl flex items-center justify-center gap-2 bg-black text-white"
+                        onClick={handleVisualize}
+                    >
+                        Visualize on Me
+                    </button>
+                </div>
             </div>
+
+            <button
+                className="btn-nia w-full py-5 rounded-2xl bg-black text-white font-bold text-sm shadow-xl active:scale-95 transition-all"
+                onClick={() => setScreen("dashboard")}
+            >
+                Go to Main Dashboard
+            </button>
         </div>
     );
 }

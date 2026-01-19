@@ -14,11 +14,11 @@ export async function POST(req: NextRequest) {
         const prompt = `
         Analyze these photos for a quick stylist check. Return valid JSON:
         {
-            "works": "One specific sentence on what works well (e.g. 'Your strong jawline suits structured collars').",
-            "tweaks": "One specific small tweak to improve (e.g. 'Avoid round necklines to balance your face shape').",
-            "grooming": "Brief grooming tip.",
-            "accessories": "Brief accessory tip.",
-            "posture": "Brief posture observation."
+            "works": "Minimum 2 specific sentences on what works well. You MUST analyze all layers of clothes present (Top, Bottom, Outerwear/Layers).",
+            "tweaks": "Minimum 2 specific sentences on small tweaks to improve the look or fit.",
+            "grooming": "Minimum 2 sentences or tips regarding grooming tailored to the user's appearance.",
+            "accessories": "Minimum 2 sentences suggesting specific accessories to enhance the outfit.",
+            "posture": "Minimum 2 sentences regarding posture and how it affects their style presence."
         }
         `;
 

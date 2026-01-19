@@ -25,7 +25,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                         <NavIcon screen="dashboard" icon="Home" />
                         <NavIcon screen="lookbook" icon="Calendar" />
                         <NavIcon screen="wardrobe" icon="Shirt" />
-                        <NavIcon screen="results" icon="User" />
+                        <NavIcon screen="grooming" icon="User" />
                     </div>
                 )}
             </div>

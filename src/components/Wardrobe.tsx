@@ -20,23 +20,35 @@ export default function Wardrobe() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Simulate item tagging
+        // Create temporary preview
+        const tempId = Date.now();
         const newItem = {
-            id: Date.now(),
+            id: tempId,
             name: "Analyzing...",
             category: "Extracting tags...",
             img: URL.createObjectURL(file)
         };
         setItems([newItem, ...items]);
 
-        // In a real app, we'd hit /api/analyze-item
-        setTimeout(() => {
+        const fd = new FormData();
+        fd.append("file", file);
+
+        try {
+            const res = await fetch("/api/analyze-item", {
+                method: "POST",
+                body: fd,
+            });
+            const d = await res.json();
+
             setItems(prev => prev.map(item =>
-                item.id === newItem.id
-                    ? { ...item, name: "Premium Cotton Tee", category: "Tops • White" }
+                item.id === tempId
+                    ? { ...item, name: d.inventory_list?.[0] || "Analyzed Item", category: d.display_desc.replace(/<br>/g, ' • ') }
                     : item
             ));
-        }, 2000);
+        } catch (err) {
+            console.error(err);
+            setItems(prev => prev.filter(item => item.id !== tempId));
+        }
     };
 
     return (

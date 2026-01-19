@@ -10,10 +10,12 @@ interface GroomingData {
 }
 
 export default function Grooming() {
-    const { setScreen, comprehensiveResults, setLoading } = useStylistStore();
-    const [data, setData] = useState<GroomingData | null>(null);
+    const { setScreen, comprehensiveResults, setLoading, groomingData, setGroomingData } = useStylistStore();
 
     useEffect(() => {
+        // Only fetch if not already available
+        if (groomingData) return;
+
         const fetchGrooming = async () => {
             setLoading(true, "Curating...");
             try {
@@ -25,7 +27,7 @@ export default function Grooming() {
                     }),
                 });
                 const d = await res.json();
-                setData(d);
+                setGroomingData(d);
             } catch (error) {
                 console.error(error);
             } finally {
@@ -34,7 +36,7 @@ export default function Grooming() {
         };
 
         fetchGrooming();
-    }, [comprehensiveResults, setLoading]);
+    }, [groomingData, comprehensiveResults, setLoading, setGroomingData]);
 
     return (
         <div className="screen pt-6">
@@ -49,13 +51,13 @@ export default function Grooming() {
                 <Sparkles className="absolute -right-4 -top-4 h-24 w-24 text-gray-50 rotate-12" />
                 <span className="label-nia mb-4 text-gray-400 block">Personalized Advice</span>
                 <p className="text-lg font-medium leading-relaxed italic text-gray-700 relative z-10">
-                    &quot;{data?.tip || "Loading your personalized grooming strategy..."}&quot;
+                    &quot;{groomingData?.tip || "Loading your personalized grooming strategy..."}&quot;
                 </p>
             </div>
 
             <h3 className="label-nia mb-4 text-black">Recommended Product Categories</h3>
             <div className="space-y-3">
-                {(data?.products || ["Face Wash", "Moisturizer", "Hair Styling Gel"]).map((prod: string, idx: number) => (
+                {(groomingData?.products || ["Face Wash", "Moisturizer", "Hair Styling Gel"]).map((prod: string, idx: number) => (
                     <div key={idx} className="tile flex items-center gap-4 py-4">
                         <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
                             <Package size={20} className="text-gray-400" />
