@@ -1,9 +1,10 @@
 "use client";
 
 import { useStylistStore } from "@/store/use-stylist-store";
-import { Bell, Cloud, Shirt, Scissors, ShoppingBag, Sparkles, Power, LogOut } from "lucide-react";
+import { Bell, Cloud, Shirt, Scissors, ShoppingBag, Sparkles, Power, LogOut, Camera } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function Dashboard() {
     const { comprehensiveResults, setScreen, selectedDailyLook, setSelectedDailyLook, userBlob, setLoading, setShopTab, setCurrentLookDescription } = useStylistStore();
@@ -64,9 +65,9 @@ export default function Dashboard() {
         }
     };
 
-    const handleLogout = () => {
-        // Reset state if needed, or just navigate
-        setScreen("splash");
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        window.location.reload();
     };
 
     return (
@@ -106,6 +107,13 @@ export default function Dashboard() {
                 </div>
                 <p className="text-xs text-gray-600 leading-relaxed font-medium">Rain expected later. Swap suede for leather boots to protect your footwear.</p>
             </div>
+
+            <button
+                onClick={() => setScreen("upload")}
+                className="btn-nia w-full py-4 mb-8 text-sm rounded-2xl flex items-center justify-center gap-2"
+            >
+                <Camera size={18} /> Assess Another Look
+            </button>
 
             <div className="hero-container mb-10">
                 <div className="hero-img-box h-[420px] bg-gray-50 rounded-[32px] overflow-hidden flex items-center justify-center text-gray-300 relative border border-gray-100 shadow-sm">
@@ -185,7 +193,7 @@ export default function Dashboard() {
 
             <div className="mb-10 text-center px-4">
                 <h3 className="text-lg font-bold mb-2">Style DNA</h3>
-                <p className="text-sm text-gray-600 leading-relaxed font-medium">
+                <p className="text-sm text-gray-600 leading-relaxed font-medium mb-4">
                     {comprehensiveResults?.profile_writeup?.summary ||
                         "Your unique style DNA favors tailored pieces in neutral colors that emphasize a polished image. Your style transcends seasonal trends, relying instead on timeless designs."}
                 </p>

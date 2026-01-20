@@ -2,8 +2,9 @@
 
 import { useStylistStore } from "@/store/use-stylist-store";
 import { Plus, History, ShoppingBag, ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { supabase } from "@/lib/supabase";
 
 interface WardrobeItem {
     id: number;
@@ -16,22 +17,71 @@ export default function Wardrobe() {
     const { setScreen } = useStylistStore();
     const [items, setItems] = useState<WardrobeItem[]>([]);
 
+    useEffect(() => {
+        const fetchWardrobe = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data, error } = await supabase
+                .from('wardrobe')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+            if (data) {
+                setItems(data.map((item: any) => ({
+                    id: item.id,
+                    name: item.description || "Wardrobe Item",
+                    category: item.category || "Uncategorized",
+                    img: item.image_url
+                })));
+            }
+        };
+
+        fetchWardrobe();
+    }, []);
+
     const handleUploadItem = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            alert("Please log in to upload items.");
+            return;
+        }
+
+        // Upload to Storage
+        const filePath = `${user.id}/${Date.now()}_${file.name}`;
+        const { error: uploadError } = await supabase.storage
+            .from('wardrobe')
+            .upload(filePath, file);
+
+        if (uploadError) {
+            console.error("Upload error:", uploadError);
+            alert("Failed to upload image.");
+            return;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('wardrobe')
+            .getPublicUrl(filePath);
+
+        // Analyze item (keep existing AI analysis)
         // Create temporary preview
         const tempId = Date.now();
         const newItem = {
             id: tempId,
             name: "Analyzing...",
             category: "Extracting tags...",
-            img: URL.createObjectURL(file)
+            img: publicUrl
         };
         setItems([newItem, ...items]);
 
         const fd = new FormData();
         fd.append("file", file);
+
+        let analyzedData = { name: "Analyzed Item", category: "Uncategorized" };
 
         try {
             const res = await fetch("/api/analyze-item", {
@@ -39,15 +89,35 @@ export default function Wardrobe() {
                 body: fd,
             });
             const d = await res.json();
-
-            setItems(prev => prev.map(item =>
-                item.id === tempId
-                    ? { ...item, name: d.inventory_list?.[0] || "Analyzed Item", category: d.display_desc.replace(/<br>/g, ' • ') }
-                    : item
-            ));
+            analyzedData = {
+                name: d.inventory_list?.[0] || "Wardrobe Item",
+                category: d.display_desc.replace(/<br>/g, ' • ')
+            };
         } catch (err) {
             console.error(err);
-            setItems(prev => prev.filter(item => item.id !== tempId));
+        }
+
+        // Insert into Database
+        const { data: insertedData, error: dbError } = await supabase
+            .from('wardrobe')
+            .insert({
+                user_id: user.id,
+                image_url: publicUrl,
+                category: analyzedData.category,
+                description: analyzedData.name
+            })
+            .select()
+            .single();
+
+        if (insertedData) {
+            setItems(prev => prev.map(item =>
+                item.id === tempId
+                    ? { ...item, id: insertedData.id, name: analyzedData.name, category: analyzedData.category }
+                    : item
+            ));
+        } else {
+            // Rollback if DB insert fails? Or just show error
+            console.error("DB Error:", dbError);
         }
     };
 

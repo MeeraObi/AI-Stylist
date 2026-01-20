@@ -3,17 +3,84 @@
 import { useStylistStore } from "@/store/use-stylist-store";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/lib/supabase";
+import { useState } from "react";
 
 export default function SignUp() {
     const { setScreen, setLoading, userBlob, setComprehensiveResults, userInfo, setUserInfo } = useStylistStore();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
     const handleBack = () => {
         setScreen("initial-check");
     };
 
     const handleSignUp = async () => {
-        // Simulate sign up then proceed to analysis
-        setLoading(true, `Creating Account for ${userInfo.name || 'User'} & Building DNA...`);
+        if (!email || !password || !userInfo.name) {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        setLoading(true, "Creating Account...");
+
+        // 1. Sign Up with Supabase
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email,
+            password,
+        });
+
+        if (authError) {
+            console.error("Auth Error:", authError);
+            alert(authError.message);
+            setLoading(false);
+            return;
+        }
+
+        const userId = authData.user?.id;
+        const session = authData.session;
+
+        // If Email Confirmation is enabled, session might be null.
+        if (!session && !userId) {
+            alert("Please check your email to confirm your account.");
+            setLoading(false);
+            return;
+        }
+
+        if (!userId) {
+            console.error("No User ID returned");
+            setLoading(false);
+            return;
+        }
+
+        console.log("User created:", userId, "Session:", session ? "Active" : "Null (Email Verification likely on)");
+
+        // 2. Create Profile
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+                id: userId,
+                email: email,
+                name: userInfo.name,
+                age: userInfo.age,
+                gender: userInfo.gender,
+                height: userInfo.height,
+                weight: userInfo.weight,
+                style_preferences: []
+            });
+
+        if (profileError) {
+            console.error("Profile creation error FULL:", profileError, profileError.message, profileError.details);
+
+            // If the error implies RLS violation or missing ID
+            if (!session) {
+                alert("Account created! Please check your email to verify before we can save your profile.");
+            } else {
+                alert("Failed to save profile data. check console.");
+            }
+        }
+
+        // 3. Proceed with Analysis
+        setLoading(true, `Building Style DNA for ${userInfo.name}...`);
 
         // Process the actual analysis after "signup"
         const fd = new FormData();
@@ -27,12 +94,31 @@ export default function SignUp() {
             });
             const data = await res.json();
             setComprehensiveResults(data);
-            setScreen("quiz"); // Or wherever the next flow is
+
+            // Save Analysis to DB (New Table)
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { error: insertError } = await supabase
+                    .from('user_analysis')
+                    .insert({
+                        user_id: user.id,
+                        analysis_data: data
+                    });
+
+                if (insertError) {
+                    console.error("FAILED TO SAVE ANALYSIS TO DB:", insertError);
+                    alert("Warning: Could not save your style profile to the database. It will be lost on logout.");
+                } else {
+                    console.log("Analysis saved to user_analysis table successfully.");
+                }
+            } else {
+                console.error("User not found during analysis save.");
+            }
+
+            setScreen("quiz");
         } catch (error) {
             console.error(error);
-            // Even if analysis fails, we might want to let them through or show error
             alert("Error building DNA.");
-            // setScreen("quiz"); // Fallback?
         } finally {
             setLoading(false);
         }
@@ -63,11 +149,22 @@ export default function SignUp() {
                 </div>
                 <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Email Address</label>
-                    <Input placeholder="name@example.com" className="h-14 rounded-xl bg-gray-50 border-gray-100 placeholder:text-gray-400" />
+                    <Input
+                        placeholder="name@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="h-14 rounded-xl bg-gray-50 border-gray-100 placeholder:text-gray-400"
+                    />
                 </div>
                 <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Password</label>
-                    <Input type="password" placeholder="Create a password" className="h-14 rounded-xl bg-gray-50 border-gray-100 placeholder:text-gray-400" />
+                    <Input
+                        type="password"
+                        placeholder="Create a password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="h-14 rounded-xl bg-gray-50 border-gray-100 placeholder:text-gray-400"
+                    />
                 </div>
             </div>
 

@@ -5,13 +5,67 @@ import { Check, X, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import Image from "next/image";
 
+import { supabase } from "@/lib/supabase";
+import { useEffect } from "react";
+
 export default function InitialCheck() {
-    const { preliminaryResults, setScreen, setLoading, userBlob, setComprehensiveResults } = useStylistStore();
+    const { preliminaryResults, setScreen, setLoading, userBlob, setComprehensiveResults, userInfo } = useStylistStore();
     const [viewMode, setViewMode] = useState<"current" | "tweak">("current");
     const [openAccordion, setOpenAccordion] = useState<string | null>(null);
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        supabase.auth.getUser().then(({ data }) => {
+            setUser(data.user);
+        });
+    }, []);
 
     const handleStartQuiz = async () => {
-        setScreen("signup");
+        if (!user) {
+            setScreen("signup");
+            return;
+        }
+
+        // Logged In Flow: Analyze and Save directly
+        setLoading(true, `Updating Style DNA for ${userInfo.name || "User"}...`);
+
+        const fd = new FormData();
+        if (userBlob) fd.append("files", userBlob);
+
+        // We might not have updated userInfo here if coming from "Assess Another Look", 
+        // but the API mainly needs the image. If it needs userInfo, we pass what we have.
+        fd.append("userInfo", JSON.stringify(userInfo));
+
+        try {
+            const res = await fetch("/api/analyze-comprehensive", {
+                method: "POST",
+                body: fd,
+            });
+            const data = await res.json();
+            setComprehensiveResults(data);
+
+            // Save Analysis to DB (New Table)
+            const { error: insertError } = await supabase
+                .from('user_analysis')
+                .insert({
+                    user_id: user.id,
+                    analysis_data: data
+                });
+
+            if (insertError) {
+                console.error("FAILED TO SAVE ANALYSIS TO DB:", insertError);
+                alert("Warning: Could not save your style profile to the database.");
+            } else {
+                console.log("Analysis saved to user_analysis table successfully.");
+            }
+
+            setScreen("dashboard");
+        } catch (error) {
+            console.error(error);
+            alert("Error building DNA.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const results = preliminaryResults || {
@@ -153,13 +207,25 @@ export default function InitialCheck() {
                 <AccordionItem id="posture" title="POSTURE" content={results.posture} />
             </div>
 
-            {/* Subscribe Card */}
+            {/* Subscribe Card / Analysis Action */}
             <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100">
-                <h3 className="text-lg font-bold mb-2">Subscribe to Nia</h3>
-                <p className="text-gray-500 text-sm mb-6 leading-relaxed">Unlock detailed DNA analysis and AI-powered wardrobe planning</p>
-                <button className="bg-[#2A2A2A] text-white w-full py-4 rounded-xl font-semibold text-sm hover:bg-black transition-colors" onClick={handleStartQuiz}>
-                    Complete DNA Scan
-                </button>
+                {user ? (
+                    <>
+                        <h3 className="text-lg font-bold mb-2">Ready to Analyze</h3>
+                        <p className="text-gray-500 text-sm mb-6 leading-relaxed">Update your Style DNA with this new look.</p>
+                        <button className="bg-black text-white w-full py-4 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity" onClick={handleStartQuiz}>
+                            Update Style DNA
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <h3 className="text-lg font-bold mb-2">Subscribe to Nia</h3>
+                        <p className="text-gray-500 text-sm mb-6 leading-relaxed">Unlock detailed DNA analysis and AI-powered wardrobe planning</p>
+                        <button className="bg-[#2A2A2A] text-white w-full py-4 rounded-xl font-semibold text-sm hover:bg-black transition-colors" onClick={handleStartQuiz}>
+                            Complete DNA Scan
+                        </button>
+                    </>
+                )}
             </div>
         </div>
     );
