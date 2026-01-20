@@ -38,6 +38,10 @@ interface StylistStore {
     setLoading: (loading: boolean, message?: string) => void;
     setSelectedDailyLook: (look: { desc: string; img: string | null } | null) => void;
     setWeeklyLooks: (looks: Array<{ day: string; title: string; desc: string }>) => void;
+    shopTab: string;
+    currentLookDescription: string | null;
+    setShopTab: (tab: string) => void;
+    setCurrentLookDescription: (desc: string | null) => void;
     setGroomingData: (data: { tip: string; products: string[] } | null) => void;
 }
 
@@ -59,6 +63,8 @@ export const useStylistStore = create<StylistStore>((set) => ({
     selectedDailyLook: null,
     weeklyLooks: [],
     groomingData: null,
+    shopTab: "Work",
+    currentLookDescription: null,
 
     setUserBlob: (userBlob) => set({ userBlob }),
     setUserInfo: (info) => set((state) => ({ userInfo: { ...state.userInfo, ...info } })),
@@ -70,4 +76,6 @@ export const useStylistStore = create<StylistStore>((set) => ({
     setSelectedDailyLook: (selectedDailyLook) => set({ selectedDailyLook }),
     setWeeklyLooks: (weeklyLooks) => set({ weeklyLooks }),
     setGroomingData: (groomingData) => set({ groomingData }),
+    setShopTab: (shopTab) => set({ shopTab }),
+    setCurrentLookDescription: (currentLookDescription) => set({ currentLookDescription }),
 }));

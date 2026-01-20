@@ -5,7 +5,7 @@ import { ArrowLeft, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 export default function SignUp() {
-    const { setScreen, setLoading, userBlob, setComprehensiveResults } = useStylistStore();
+    const { setScreen, setLoading, userBlob, setComprehensiveResults, userInfo, setUserInfo } = useStylistStore();
 
     const handleBack = () => {
         setScreen("initial-check");
@@ -13,11 +13,12 @@ export default function SignUp() {
 
     const handleSignUp = async () => {
         // Simulate sign up then proceed to analysis
-        setLoading(true, "Creating Account & Building DNA...");
+        setLoading(true, `Creating Account for ${userInfo.name || 'User'} & Building DNA...`);
 
         // Process the actual analysis after "signup"
         const fd = new FormData();
         if (userBlob) fd.append("files", userBlob);
+        fd.append("userInfo", JSON.stringify(userInfo));
 
         try {
             const res = await fetch("/api/analyze-comprehensive", {
@@ -53,7 +54,12 @@ export default function SignUp() {
             <div className="space-y-4 flex-1">
                 <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Full Name</label>
-                    <Input placeholder="Enter your name" className="h-14 rounded-xl bg-gray-50 border-gray-100 placeholder:text-gray-400" />
+                    <Input
+                        placeholder="Enter your name"
+                        value={userInfo.name}
+                        onChange={(e) => setUserInfo({ name: e.target.value })}
+                        className="h-14 rounded-xl bg-gray-50 border-gray-100 placeholder:text-gray-400"
+                    />
                 </div>
                 <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Email Address</label>

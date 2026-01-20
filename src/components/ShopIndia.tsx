@@ -12,9 +12,9 @@ interface ShopItem {
 }
 
 export default function ShopIndia() {
-    const { setScreen, comprehensiveResults, setLoading, userBlob } = useStylistStore();
+    const { setScreen, comprehensiveResults, setLoading, userBlob, shopTab, currentLookDescription } = useStylistStore();
     const [allResults, setAllResults] = useState<Record<string, ShopItem[]>>({});
-    const [activeTab, setActiveTab] = useState("Work");
+    const [activeTab, setActiveTab] = useState(shopTab || "Work");
     const [visualizedImg, setVisualizedImg] = useState<string | null>(null);
 
     useEffect(() => {
@@ -25,7 +25,9 @@ export default function ShopIndia() {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        context: comprehensiveResults?.physical_desc || "Normal stylish aesthetic"
+                        context: comprehensiveResults?.physical_desc || "Normal stylish aesthetic",
+                        lookDescription: currentLookDescription,
+                        activeTab: activeTab
                     }),
                 });
                 const data = await res.json();
@@ -38,7 +40,13 @@ export default function ShopIndia() {
         };
 
         fetchShopItems();
+        fetchShopItems();
     }, [comprehensiveResults, setLoading]);
+
+    // Update activeTab if shopTab changes (e.g. re-entering screen)
+    useEffect(() => {
+        if (shopTab) setActiveTab(shopTab);
+    }, [shopTab]);
 
     const visualizeLook = async () => {
         if (!userBlob) return;
@@ -76,6 +84,16 @@ export default function ShopIndia() {
                 <h2 className="text-2xl font-bold">Shop India</h2>
             </div>
 
+            {currentLookDescription && (
+                <div className="bg-blue-50 p-4 rounded-xl mb-6 border border-blue-100">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Sparkles size={14} className="text-blue-500 fill-blue-500" />
+                        <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Shopping For</span>
+                    </div>
+                    <p className="text-sm text-gray-700 leading-relaxed font-medium">"{currentLookDescription}"</p>
+                </div>
+            )}
+
             <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
                 {["Work", "Casual", "Social"].map((tab) => (
                     <button
@@ -93,7 +111,7 @@ export default function ShopIndia() {
                     <div key={idx} className="tile border-none bg-gray-50/50 p-6 flex justify-between items-center group hover:bg-white hover:shadow-md transition-all">
                         <div className="flex-1">
                             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">
-                                {idx === 0 ? "Top" : idx === 1 ? "Bottom" : "Accessory"}
+                                Recommendation #{idx + 1}
                             </span>
                             <h4 className="font-bold text-gray-900 text-sm mb-1">{item.name}</h4>
                             <div className="flex items-center gap-2">

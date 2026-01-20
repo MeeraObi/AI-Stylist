@@ -40,7 +40,7 @@ export default function StyleQuiz() {
         } else {
             const finalLikes = like ? [...likes, cards[currentIndex].id] : likes;
             setQuizSelections(finalLikes);
-            setScreen("results");
+            setScreen("dashboard");
         }
     };
 

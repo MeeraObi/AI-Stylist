@@ -5,6 +5,9 @@ export async function POST(req: NextRequest) {
     try {
         const formData = await req.formData();
         const files = formData.getAll("files") as File[];
+        const userInfoStr = formData.get("userInfo") as string;
+        const userInfo = userInfoStr ? JSON.parse(userInfoStr) : {};
+        const name = userInfo.name || "the user";
 
         const model = genAI.getGenerativeModel({
             model: TEXT_MODEL,
@@ -12,17 +15,25 @@ export async function POST(req: NextRequest) {
         });
 
         const prompt = `
-        Analyze these user photos. Return detailed JSON:
+        Analyze these user photos. 
+        IMPORTANT: Refer to the user as "${name}" throughout the response. Do NOT use "he", "she", or generic pronouns unless necessary for grammar, but prioritize using the name.
+        
+        Return detailed JSON:
         {
             "profile_writeup": {
-                "summary": "200 words on style vibe"
+                "summary": "200 words on style vibe, using the name '${name}'."
             },
             "first_looks": {
-                "work": "Specific outfit description for work.",
-                "travel": "Specific outfit description for travel.",
-                "social": "Specific outfit description for social events."
+                "work": "Specific outfit description for work, referring to ${name}.",
+                "travel": "Specific outfit description for travel, referring to ${name}.",
+                "social": "Specific outfit description for social events, referring to ${name}."
             },
-            "physical_desc": "Visual description of face/body for image gen (e.g. 'Male, short beard, square face, medium build')"
+            "physical_desc": "Visual description of face/body for image gen (e.g. 'Male, short beard, square face, medium build')",
+            "style_tweaks": [
+                "Detailed actionable tip 1 to improve the look (max 10 words)",
+                "Detailed actionable tip 2 to improve the look (max 10 words)",
+                "Detailed actionable tip 3 to improve the look (max 10 words)"
+            ]
         }
         `;
 

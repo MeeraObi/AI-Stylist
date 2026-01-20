@@ -3,23 +3,31 @@ import { genAI, TEXT_MODEL } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
     try {
-        const { context } = await req.json();
+        const { context, lookDescription, activeTab } = await req.json();
         const model = genAI.getGenerativeModel({
             model: TEXT_MODEL,
         });
 
+        // Use the specific look description if available to narrow down the search
+        const specificLook = lookDescription ? `
+        FOCUS specifically on this look description: "${lookDescription}".
+        Ensure all items suggested MATCH this description perfectly.
+        ` : `Context: "${context || "Normal stylish aesthetic"}"`;
+
         const prompt = `
         Act as a personal shopper for the Indian market (Myntra, Ajio, Amazon).
-        Context: "${context || "Normal stylish aesthetic"}".
+        ${specificLook}
         
         Create 3 DISTINCT complete outfits (Work, Casual, Social).
-        For each category, identify 3 key items (Top, Bottom, Accessories).
+        
+        IMPORTANT: For "Work", "Casual", and "Social", YOU MUST PROVIDE A LIST OF ITEMS THAT FORM A COMPLETE OUTFIT including ALL LAYERS.
+        Include: Top (Shirt/Blouse), Bottom (Pants/Skirt), Outerwear (Blazer/Jacket/Cardigan if applicable), Shoes, and Accessories.
         
         Return STRICT JSON format with categories as keys:
         {
             "Work": [ 
                 { "name": "Specific Item Name", "store": "Myntra/Ajio/Amazon", "price": "₹1500-3000" },
-                ... (3 items)
+                ... (at least 4-5 items per look)
             ],
             "Casual": [ ... ],
             "Social": [ ... ]
